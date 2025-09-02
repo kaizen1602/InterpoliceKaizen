@@ -1,21 +1,31 @@
 import express from "express";
-import {
-  getAllUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  deleteUser,
-  authUser,
-} from "./auth.controller.js";
+import { authUser, refreshToken, logout, verifyTokenStatus } from "./auth.controller.js";
+import { validateAuth } from "../../helpers/validators.js";
+import { authLimiter } from "../../middleware/security.js";
+import { verifyToken } from "../../middleware/auth.js";
 
 const router = express.Router();
 
-// Rutas para usuarios
-router.get("/listartodos", getAllUsers);
-router.get("/listarporid/:id", getUserById);
-router.post("/crear", createUser);
-router.post("/login", authUser);
-router.put("/actualizar/:id", updateUser);
-router.delete("/borrar/:id", deleteUser);
+// Rutas de autenticación (públicas)
+router.post("/login", 
+  authLimiter, // Limitar intentos de login
+  validateAuth, // Validar email y password
+  authUser
+);
+
+router.post("/refresh", 
+  authLimiter,
+  refreshToken
+);
+
+router.post("/logout", 
+  logout // No requiere autenticación ya que puede ser llamado con token expirado
+);
+
+// Ruta para verificar si el token es válido (protegida)
+router.get("/verify", 
+  verifyToken,
+  verifyTokenStatus
+);
 
 export default router; 
