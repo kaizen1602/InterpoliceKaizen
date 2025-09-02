@@ -22,8 +22,13 @@ export const verifyToken = catchAsync(async (req, res, next) => {
     token = req.headers['x-access-token'];
   } else if (req.headers['token']) {
     token = req.headers['token'];
-  } else if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.split(' ')[1];
+  } else if (authHeader) {
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else {
+      // Permitir Authorization con el token crudo
+      token = authHeader.trim();
+    }
   }
 
   if (!token) {
